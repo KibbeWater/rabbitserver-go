@@ -64,3 +64,29 @@ This should be used in tandem with the PTT type. When the PTT is active, you can
   "data": "<Base64-Audio>"
 }
 ```
+
+## Register
+
+This type is used to register a new device, it requires a base64 encoded QR code from the activation page.
+
+```json
+{
+  "type": "register",
+  "data": "<Base64-QR-Code>"
+}
+```
+
+The server will then parse and register the device to your account, returning the following response:
+
+```json
+{
+  "type": "register",
+  "data": {
+    "imei": "<IMEI>",
+    "accountKey": "<Account-Key>",
+    "userName": "<User-Name>",
+    "userId": "<User-ID>",
+    "actualUserId": "<Actual-User-ID>"
+  }
+}
+```
