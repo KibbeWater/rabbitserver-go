@@ -1,0 +1,18 @@
+# Set ENV vars
+# Please set APP_VERSION and OS_VERSION before running this script
+export APP_VERSION=undefined
+export OS_VERSION=undefined
+
+# Check if APP_VERSION is set and not "undefined", if not, echo error and exit
+if [ -z "$APP_VERSION" ] || [ "$APP_VERSION" == "undefined" ]; then
+    echo "APP_VERSION is not set, please set it before running this script"
+    exit 1
+fi
+
+# Check if OS_VERSION is set and not "undefined", if not, echo error and exit
+if [ -z "$OS_VERSION" ] || [ "$OS_VERSION" == "undefined" ]; then
+    echo "OS_VERSION is not set, please set it before running this script"
+    exit 1
+fi
+
+go build -ldflags="-X 'main.AppVersion=$APP_VERSION' -X 'main.OSVersion=$OS_VERSION'" -o bin/rabbit main.go
