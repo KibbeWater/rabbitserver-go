@@ -15,7 +15,7 @@ require (
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/klauspost/compress v1.17.8 // indirect
-	github.com/makiuchi-d/gozxing v0.1.1 // indirect
+	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
