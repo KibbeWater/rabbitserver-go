@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"image/png"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -13,6 +17,8 @@ import (
 
 	"github.com/Noooste/azuretls-client"
 	"github.com/gorilla/websocket"
+	"github.com/makiuchi-d/gozxing"
+	"github.com/makiuchi-d/gozxing/qrcode"
 )
 
 type webSocketHandler struct {
@@ -23,6 +29,41 @@ var (
 	AppVersion = "undefined"
 	OSVersion  = "undefined"
 )
+
+func decodeQRAndValidateURL(imageData []byte) (string, error) {
+	// Create a reader with the QRCodeReader
+	reader := qrcode.NewQRCodeReader()
+
+	// Create a BinaryBitmap from your image data
+	img, err := png.Decode(bytes.NewReader(imageData))
+	if err != nil {
+		return "", fmt.Errorf("error decoding image data: %w", err)
+	}
+	bitmap, err := gozxing.NewBinaryBitmapFromImage(img)
+	if err != nil {
+		return "", fmt.Errorf("error creating binary bitmap: %w", err)
+	}
+
+	// Decode the QR code
+	result, err := reader.Decode(bitmap, nil)
+	if err != nil {
+		return "", fmt.Errorf("error decoding QR code: %w", err)
+	}
+
+	// Check if the decoded information is a valid URL
+	qrUrl, err := url.ParseRequestURI(result.GetText())
+	if err != nil {
+		return "", fmt.Errorf("decoded QR code is not a valid URL: %w", err)
+	}
+
+	// Does URL point to https://hole.rabbit.tech/apis/linkDevice
+	if qrUrl.Scheme != "https" || qrUrl.Host != "hole.rabbit.tech" || qrUrl.Path != "/apis/linkDevice" {
+		return "", fmt.Errorf("decoded QR code does not point to https://hole.rabbit.tech/apis/linkDevice")
+	}
+
+	// If we reach here, the QR code contains a valid URL
+	return result.GetText(), nil
+}
 
 func handleRabbit(rabbit *azuretls.Websocket, ws *websocket.Conn) {
 	for {
@@ -222,6 +263,76 @@ func (wsh webSocketHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				err = rabbitConnection.WriteMessage(2, audioData)
 				if err != nil {
 					log.Println("error writing audio to rabbit:", err)
+					continue
+				}
+			case "register":
+				if rabbitConnection == nil {
+					log.Println("register received before logon")
+					continue
+				}
+
+				// Unmarshal the message
+				registerData := interfaces.RegisterRequest{}
+				err = json.Unmarshal([]byte(message), &registerData)
+				if err != nil {
+					log.Println("error unmarshalling register data:", err)
+					continue
+				}
+
+				// registerData has a "Data" field which is a base64 encoded string, decode it into a png
+				imageData, err := base64.StdEncoding.DecodeString(registerData.Data)
+				if err != nil {
+					log.Println("error decoding base64 image:", err)
+					continue
+				}
+
+				url, err := decodeQRAndValidateURL(imageData)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+
+				IMEI := rabbit.GenerateIMEI()
+				url += "&deviceId=" + IMEI
+
+				// Perform a GET request to the URL
+				body := rabbit.Register(url)
+
+				if strings.Contains(string(body), "\"error\":") {
+					log.Println("error registering device:", string(body))
+					continue
+				}
+
+				// Unmarshal the response
+				var registerResponse interfaces.RabbitRegisterResponse
+				err = json.Unmarshal(body, &registerResponse)
+				if err != nil {
+					log.Println("error unmarshalling register response:", err)
+					continue
+				}
+
+				// Create a new response
+				response := interfaces.RegisterResponse{
+					Type: "register",
+					Data: interfaces.RegisterResponseData{
+						ActualUserID: registerResponse.ActualUserID,
+						UserID:       registerResponse.UserID,
+						AccountKey:   registerResponse.AccountKey,
+						IMEI:         IMEI,
+					},
+				}
+
+				// Marshal the response
+				responseBytes, err := json.Marshal(response)
+				if err != nil {
+					log.Println("error marshalling register response:", err)
+					continue
+				}
+
+				// Write the response
+				err = ws.WriteMessage(1, responseBytes)
+				if err != nil {
+					log.Println("error writing register response:", err)
 					continue
 				}
 			default:

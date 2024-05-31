@@ -14,3 +14,10 @@ type AssistantDeviceResponse struct {
 		}
 	} `json:"kernel"`
 }
+
+type RabbitRegisterResponse struct {
+	ActualUserID string `json:"actualUserId"`
+	UserID       string `json:"userId"`
+	AccountKey   string `json:"accountKey"`
+	UserName     string `json:"userName"`
+}

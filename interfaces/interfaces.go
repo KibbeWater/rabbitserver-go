@@ -30,6 +30,11 @@ type AudioRequest struct {
 	Data string `json:"data"`
 }
 
+type RegisterRequest struct {
+	Type string `json:"type"`
+	Data string `json:"data"`
+}
+
 type LogonResponse struct {
 	Type string `json:"type"`
 	Data string `json:"data"`
@@ -46,4 +51,16 @@ type AudioMessageResponse struct {
 		Text  string `json:"text"`
 		Audio string `json:"audio"`
 	} `json:"data"`
+}
+
+type RegisterResponse struct {
+	Type string               `json:"type"`
+	Data RegisterResponseData `json:"data"`
+}
+type RegisterResponseData struct {
+	ActualUserID string `json:"actualUserId"`
+	UserID       string `json:"userId"`
+	AccountKey   string `json:"accountKey"`
+	UserName     string `json:"userName"`
+	IMEI         string `json:"imei"`
 }
