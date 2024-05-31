@@ -318,6 +318,7 @@ func (wsh webSocketHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						ActualUserID: registerResponse.ActualUserID,
 						UserID:       registerResponse.UserID,
 						AccountKey:   registerResponse.AccountKey,
+						UserName:     registerResponse.UserName,
 						IMEI:         IMEI,
 					},
 				}
