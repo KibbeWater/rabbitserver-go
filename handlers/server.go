@@ -141,12 +141,33 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 				continue
 			}
 
+			// Get the first 50 characters of the audio data and print it to the console
+			if len(data.Data) > 50 {
+				log.Println("audio data:", data.Data[:50])
+			} else {
+				log.Println("audio data:", data.Data)
+			}
+
+			// Get the base64 data from the data url
+			b64 := strings.Split(data.Data, ",")[1]
+
 			// Convert the base64 audio to a byte array
-			audioData, err := base64.StdEncoding.DecodeString(data.Data)
+			audioData, err := base64.StdEncoding.DecodeString(b64)
 			if err != nil {
 				log.Println("error decoding base64 audio:", err)
 				continue
 			}
+
+			// audioData is a data URL, if the mimeType is audio/webm, convert it to a WAV, otherwise send it as is
+			/* if strings.Contains(data.Data, "audio/webm") {
+				audioData, err = rabbit.WebMToWav(b64)
+				if err != nil {
+					log.Println("error converting audio to WAV:", err)
+					continue
+				}
+			} else {
+				continue
+			} */
 
 			// Check if audio data is valid WAV
 			reader := bytes.NewReader(audioData)
@@ -159,6 +180,7 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 			}
 
 			// Send the audio to the rabbit connection
+			println("sending audio to rabbit")
 			err = rabbitConnection.WriteMessage(2, audioData)
 			if err != nil {
 				log.Println("error writing audio to rabbit:", err)
