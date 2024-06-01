@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"log"
@@ -9,12 +10,16 @@ import (
 	"main/interfaces"
 	"main/rabbit"
 
-	"github.com/Noooste/azuretls-client"
+	"github.com/go-audio/wav"
 	"github.com/gorilla/websocket"
 )
 
 func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
-	var rabbitConnection *azuretls.Websocket = nil
+	var isLoggedIn bool = false
+
+	rabbitConnection := rabbit.SpawnRabbitConnection(OSVersion, AppVersion)
+	go HandleRabbit(rabbitConnection, ws, &isLoggedIn)
+
 	for {
 		_, message, err := ws.ReadMessage()
 		if err != nil {
@@ -34,6 +39,11 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 
 		switch msg.Type {
 		case "logon":
+			if isLoggedIn {
+				log.Println("logon received after already logged in")
+				continue
+			}
+
 			request := interfaces.LogonRequest{}
 			err = json.Unmarshal([]byte(message), &request)
 			if err != nil {
@@ -41,11 +51,15 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 				continue
 			}
 
-			rabbitConnection = rabbit.SpawnRabbitConnection(request.Data.IMEI, request.Data.AccountKey, OSVersion, AppVersion)
+			// Send the logon request to the rabbit connection
+			err = rabbitConnection.WriteJSON(rabbit.GenerateAuthPayload(request.Data.IMEI, request.Data.AccountKey))
+			if err != nil {
+				log.Println("error writing logon to rabbit:", err)
+				continue
+			}
 
-			go HandleRabbit(rabbitConnection, ws)
 		case "message":
-			if rabbitConnection == nil {
+			if !isLoggedIn {
 				log.Println("message received before logon")
 				continue
 			}
@@ -65,7 +79,7 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 				continue
 			}
 		case "ptt":
-			if rabbitConnection == nil {
+			if !isLoggedIn {
 				log.Println("ptt received before logon")
 				continue
 			}
@@ -79,31 +93,42 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 			}
 
 			// Send the message to the rabbit connection
+			var responseJSON map[string]interface{}
 			if data.Data.Active {
-				err = rabbitConnection.WriteJSON(map[string]interface{}{
+				responseJSON = map[string]interface{}{
 					"kernel": map[string]interface{}{
 						"voiceActivity": map[string]interface{}{
 							"imageBase64": data.Data.Image,
 							"state":       "pttButtonPressed",
 						},
 					},
-				})
+				}
 			} else {
-				err = rabbitConnection.WriteJSON(map[string]interface{}{
+				responseJSON = map[string]interface{}{
 					"kernel": map[string]interface{}{
 						"voiceActivity": map[string]interface{}{
 							"imageBase64": data.Data.Image,
 							"state":       "pttButtonReleased",
 						},
 					},
-				})
+				}
 			}
+
+			// Marshal the response
+			responseBytes, err := json.Marshal(responseJSON)
 			if err != nil {
-				log.Println("error writing image to rabbit:", err)
+				log.Println("error marshalling ptt response:", err)
+				continue
+			}
+
+			// Write the response
+			err = rabbitConnection.WriteMessage(1, responseBytes)
+			if err != nil {
+				log.Println("error writing ptt response:", err)
 				continue
 			}
 		case "audio":
-			if rabbitConnection == nil {
+			if !isLoggedIn {
 				log.Println("audio received before logon")
 				continue
 			}
@@ -123,6 +148,16 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 				continue
 			}
 
+			// Check if audio data is valid WAV
+			reader := bytes.NewReader(audioData)
+			decoder := wav.NewDecoder(reader)
+
+			_, err = decoder.FullPCMBuffer()
+			if err != nil {
+				log.Println("error decoding WAV audio:", err)
+				continue
+			}
+
 			// Send the audio to the rabbit connection
 			err = rabbitConnection.WriteMessage(2, audioData)
 			if err != nil {
@@ -130,8 +165,8 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 				continue
 			}
 		case "register":
-			if rabbitConnection == nil {
-				log.Println("register received before logon")
+			if isLoggedIn {
+				log.Println("register received after already logged in")
 				continue
 			}
 

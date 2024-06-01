@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func HandleRabbit(rabbit *azuretls.Websocket, ws *websocket.Conn) {
+func HandleRabbit(rabbit *azuretls.Websocket, ws *websocket.Conn, loggedIn *bool) {
 	for {
 		_, bytes, err := rabbit.ReadMessage()
 		if err != nil {
@@ -20,7 +20,6 @@ func HandleRabbit(rabbit *azuretls.Websocket, ws *websocket.Conn) {
 		}
 
 		message := string(bytes)
-		log.Println("received message:", message)
 		if strings.Contains(message, "{\"initialize\"") {
 			response := interfaces.LogonResponse{
 				Type: "logon",
@@ -36,6 +35,7 @@ func HandleRabbit(rabbit *azuretls.Websocket, ws *websocket.Conn) {
 				log.Println("error writing logon response:", err)
 				continue
 			}
+			*loggedIn = true
 		} else if strings.Contains(message, "{\"assistantResponse\":") {
 			// demarshal the message into AssistantResponse
 			var assistantResponse interfaces.AssistantResponse
@@ -82,6 +82,30 @@ func HandleRabbit(rabbit *azuretls.Websocket, ws *websocket.Conn) {
 			}
 
 			ws.WriteMessage(1, responseBytes)
+		} else if strings.Contains(message, "{\"speechRecognized\":") {
+			var speechResponse interfaces.RabbitSpeechResponse
+			err = json.Unmarshal(bytes, &speechResponse)
+			if err != nil {
+				log.Println("error unmarshalling speech response:", err)
+				continue
+			}
+
+			if !speechResponse.SpeechRecognized.Recognized {
+				// Write a message response
+				response := interfaces.MessageResponse{
+					Type: "message",
+					Data: "Sorry, I didn't catch that. Could you repeat it?",
+				}
+				responseBytes, err := json.Marshal(response)
+				if err != nil {
+					log.Println("error marshalling message response:", err)
+				}
+
+				ws.WriteMessage(1, responseBytes)
+				continue
+			}
+		} else {
+			log.Println("unknown message type:", message)
 		}
 	}
 }

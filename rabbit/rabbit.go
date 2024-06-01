@@ -59,24 +59,8 @@ func GenerateMessagePayload(message string) map[string]interface{} {
 	}
 }
 
-func Register(URL string) []byte {
-	session := azuretls.NewSession()
-
-	if err := session.ApplyJa3(JA3, azuretls.SchemeHttps); err != nil {
-		panic(err)
-	}
-
-	resp, err := session.Get(URL, nil)
-	if err != nil {
-		log.Println(err)
-		return nil
-	}
-
-	return resp.Body
-}
-
-func SpawnRabbitConnection(IMEI string, accountKey string, osVer string, appVer string) *azuretls.Websocket {
-	authPayload := map[string]interface{}{
+func GenerateAuthPayload(IMEI string, accountKey string) map[string]interface{} {
+	return map[string]interface{}{
 		"global": map[string]interface{}{
 			"initialize": map[string]interface{}{
 				"deviceId":  IMEI,
@@ -94,7 +78,25 @@ func SpawnRabbitConnection(IMEI string, accountKey string, osVer string, appVer 
 			},
 		},
 	}
+}
 
+func Register(URL string) []byte {
+	session := azuretls.NewSession()
+
+	if err := session.ApplyJa3(JA3, azuretls.SchemeHttps); err != nil {
+		panic(err)
+	}
+
+	resp, err := session.Get(URL, nil)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	return resp.Body
+}
+
+func SpawnRabbitConnection(osVer string, appVer string) *azuretls.Websocket {
 	session := azuretls.NewSession()
 
 	if err := session.ApplyJa3(JA3, azuretls.SchemeWss); err != nil {
@@ -103,7 +105,6 @@ func SpawnRabbitConnection(IMEI string, accountKey string, osVer string, appVer 
 
 	ws, err := session.NewWebsocket("wss://r1-api.rabbit.tech/session", 1024, 1024,
 		azuretls.OrderedHeaders{
-			{"deviceId", IMEI},
 			{"App-Version", appVer},
 			{"OS-Version", osVer},
 			{"User-Agent", "okhttp/4.9.1"},
@@ -111,12 +112,6 @@ func SpawnRabbitConnection(IMEI string, accountKey string, osVer string, appVer 
 	)
 
 	if err != nil {
-		log.Println(err)
-		return nil
-	}
-
-	// Send the auth payload
-	if err := ws.WriteJSON(authPayload); err != nil {
 		log.Println(err)
 		return nil
 	}

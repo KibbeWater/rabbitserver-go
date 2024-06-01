@@ -21,3 +21,10 @@ type RabbitRegisterResponse struct {
 	AccountKey   string `json:"accountKey"`
 	UserName     string `json:"userName"`
 }
+
+type RabbitSpeechResponse struct {
+	SpeechRecognized struct {
+		Recognized bool   `json:"recognized"`
+		Text       string `json:"text"`
+	} `json:"speechRecognized"`
+}

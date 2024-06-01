@@ -64,3 +64,8 @@ type RegisterResponseData struct {
 	UserName     string `json:"userName"`
 	IMEI         string `json:"imei"`
 }
+
+type PTTResponse struct {
+	Type string `json:"type"`
+	Data string `json:"data"`
+}
