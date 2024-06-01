@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 
@@ -17,7 +18,12 @@ import (
 func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 	var isLoggedIn bool = false
 
-	rabbitConnection := rabbit.SpawnRabbitConnection(OSVersion, AppVersion)
+	rabbitConnection, err := rabbit.SpawnRabbitConnection(OSVersion, AppVersion)
+
+	if err != nil {
+		panic(fmt.Sprintf("Error connecting to the RabbitHole, please check and verify that the OSVersion and AppVersion headers are correct. Error: %v", err))
+	}
+
 	go HandleRabbit(rabbitConnection, ws, &isLoggedIn)
 
 	for {
