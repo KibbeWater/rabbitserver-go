@@ -96,7 +96,7 @@ func Register(URL string) []byte {
 	return resp.Body
 }
 
-func SpawnRabbitConnection(osVer string, appVer string) *azuretls.Websocket {
+func SpawnRabbitConnection(osVer string, appVer string) (*azuretls.Websocket, error) {
 	session := azuretls.NewSession()
 
 	if err := session.ApplyJa3(JA3, azuretls.SchemeWss); err != nil {
@@ -112,9 +112,8 @@ func SpawnRabbitConnection(osVer string, appVer string) *azuretls.Websocket {
 	)
 
 	if err != nil {
-		log.Println(err)
-		return nil
+		return nil, err
 	}
 
-	return ws
+	return ws, nil
 }
