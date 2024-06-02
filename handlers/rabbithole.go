@@ -94,16 +94,26 @@ func HandleRabbit(rabbit *azuretls.Websocket, ws *websocket.Conn, loggedIn *bool
 				// Write a message response
 				response := interfaces.MessageResponse{
 					Type: "message",
-					Data: "Sorry, I didn't catch that. Could you repeat it?",
+					Data: "Sorry, I didn't quite catch that. Could you repeat it?",
 				}
 				responseBytes, err := json.Marshal(response)
 				if err != nil {
 					log.Println("error marshalling message response:", err)
 				}
-
 				ws.WriteMessage(1, responseBytes)
 				continue
 			}
+
+			response := interfaces.PTTResponse{
+				Type: "ptt",
+				Data: speechResponse.SpeechRecognized.Text,
+			}
+			responseBytes, err := json.Marshal(response)
+			if err != nil {
+				log.Println("error marshalling ptt response:", err)
+			}
+
+			ws.WriteMessage(1, responseBytes)
 		} else {
 			log.Println("unknown message type:", message)
 		}

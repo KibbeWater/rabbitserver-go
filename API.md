@@ -52,7 +52,14 @@ Updates your current PTT status, the payload also has a `image` field which acce
 }
 ```
 
-This type has no return value.
+When speech is recognized by the server, you will receive the spoken text in the following format:
+
+```json
+{
+  "type": "ptt",
+  "data": "<Spoken-Text>"
+}
+```
 
 ## Audio
 
