@@ -72,6 +72,18 @@ This should be used in tandem with the PTT type. When the PTT is active, you can
 }
 ```
 
+When you receive a text response, a audio reponse usually gets sent right after it containing the spoken text and information about the audio.
+
+```json
+{
+  "type": "audio",
+  "data": {
+    "text": "<Stringified-Json>", // ex: {\"language\":\"en\",\"chars\":[\" \",\"H\"],\"char_start_times_ms\":[0,0],\"char_durations_ms\":[0,93]}
+    "audio": "<Base64-Audio>"
+  }
+}
+```
+
 ## Register
 
 This type is used to register a new device, it requires a base64 encoded QR code from the activation page.
