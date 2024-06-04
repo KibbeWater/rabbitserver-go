@@ -222,18 +222,23 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 			}
 
 			// registerData has a "Data" field which is a base64 encoded string, decode it into a png
-			imageData, err := base64.StdEncoding.DecodeString(registerData.Data)
-			if err != nil {
-				log.Println("error decoding base64 image:", err)
-				continue
-			}
-
 			if urlStr == "" {
+				imageData, err := base64.StdEncoding.DecodeString(registerData.Data)
+				if err != nil {
+					log.Println("error decoding base64 image:", err)
+					continue
+				}
+
 				urlStr, err = rabbit.DecodeQRAndValidateURL(imageData)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
+			}
+
+			if urlStr == "" {
+				log.Println("error decoding QR code")
+				continue
 			}
 
 			IMEI := rabbit.GenerateIMEI()
