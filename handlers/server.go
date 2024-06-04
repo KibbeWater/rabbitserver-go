@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/url"
 	"strings"
 
 	"main/interfaces"
@@ -206,6 +207,20 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 				continue
 			}
 
+			urlStr := ""
+			if strings.Contains(registerData.Data, "https://") {
+				qrUrl, err := url.ParseRequestURI(registerData.Data)
+				if err != nil {
+					continue
+				}
+
+				if qrUrl.Scheme != "https" || qrUrl.Host != "hole.rabbit.tech" || qrUrl.Path != "/apis/linkDevice" {
+					continue
+				}
+
+				urlStr = registerData.Data
+			}
+
 			// registerData has a "Data" field which is a base64 encoded string, decode it into a png
 			imageData, err := base64.StdEncoding.DecodeString(registerData.Data)
 			if err != nil {
@@ -213,17 +228,19 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 				continue
 			}
 
-			url, err := rabbit.DecodeQRAndValidateURL(imageData)
-			if err != nil {
-				log.Println(err)
-				continue
+			if urlStr == "" {
+				urlStr, err = rabbit.DecodeQRAndValidateURL(imageData)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
 			}
 
 			IMEI := rabbit.GenerateIMEI()
-			url += "&deviceId=" + IMEI
+			urlStr += "&deviceId=" + IMEI
 
 			// Perform a GET request to the URL
-			body := rabbit.Register(url)
+			body := rabbit.Register(urlStr)
 
 			if strings.Contains(string(body), "\"error\":") {
 				log.Println("error registering device:", string(body))
