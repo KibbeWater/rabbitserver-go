@@ -15,4 +15,4 @@ if [ -z "$OS_VERSION" ] || [ "$OS_VERSION" == "undefined" ]; then
     exit 1
 fi
 
-go build -ldflags="-X 'main.AppVersion=$APP_VERSION' -X 'main.OSVersion=$OS_VERSION'" -o bin/rabbit main.go
+APP_VERSION=$APP_VERSION OS_VERSION=$OS_VERSION bin/rabbit main.go

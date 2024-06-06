@@ -4,13 +4,15 @@ Simple WebSocket wrapper to communicate with RabbitHole through regular WebSocke
 
 ## Getting Started
 
+This guide will cover how to build and run the server. If you need docker instructions, please refer to the [Docker](#docker) section.
+
 Begin by copying the build script
 
 ```bash
-cat build.sh.example > build.sh
+cat start.sh.example > start.sh
 ```
 
-Then, edit the `build.sh` file and set the required environment variables.
+Then, edit the `start.sh` file and set the required environment variables.
 
 ```sh
 # Set ENV vars
@@ -22,9 +24,45 @@ Finally, run the build script and the binary will be created in the `bin` direct
 
 ```bash
 ./build.sh
-cd bin
-# Run the binary, different depending on the OS
-./rabbit
+./start.sh
+```
+
+## Docker
+
+You can run the server using Docker. First, build the Docker image:
+
+```bash
+docker build -t rabbitserver .
+```
+
+Then, run the Docker container:
+
+```bash
+docker run -p 8080:8080 -e APP_VERSION=<AppVer> -e OS_VERSION=<OSVer> rabbitserver
+```
+
+For a simpler setup, use Docker Compose. Here's an example `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  rabbitserver:
+    image: rabbitserver
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_VERSION=<AppVer>
+      - OS_VERSION=<OSVer>
+```
+
+Replace `<AppVer>` and `<OSVer>` with your application and OS versions, respectively.
+
+Finally, run the Docker container with Docker Compose:
+
+```bash
+docker-compose up
 ```
 
 ## Usage

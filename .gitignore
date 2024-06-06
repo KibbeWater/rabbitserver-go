@@ -1,8 +1,8 @@
 # Exclude binaries
 /bin
 
-# Exclude build scripts, contains sensitive information
-build.sh
+# Exclude start scripts, contains sensitive information
+start.sh
 
 # MacOS specific
 /.DS_Store

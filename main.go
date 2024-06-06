@@ -19,6 +19,29 @@ var (
 	OSVersion  = "undefined"
 )
 
+func validateEnv() {
+	os_version, exists := os.LookupEnv("OS_VERSION")
+	if !exists {
+		log.Fatal("OS_VERSION environment variable not set")
+	}
+
+	app_version, exists := os.LookupEnv("APP_VERSION")
+	if !exists {
+		log.Fatal("APP_VERSION environment variable not set")
+	}
+
+	if os_version == "" {
+		log.Fatal("OS_VERSION environment variable is empty")
+	}
+
+	if app_version == "" {
+		log.Fatal("APP_VERSION environment variable is empty")
+	}
+
+	AppVersion = app_version
+	OSVersion = os_version
+}
+
 func (wsh webSocketHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ws, err := wsh.upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -32,6 +55,10 @@ func (wsh webSocketHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	port, exists := os.LookupEnv("PORT")
+
+	validateEnv()
+	println("OS_VERSION: " + OSVersion)
+	println("APP_VERSION: " + AppVersion)
 
 	portNumber := "8080"
 	if exists {
