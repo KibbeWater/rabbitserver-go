@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"log"
+	"main/config"
 	"main/interfaces"
 	"strings"
 
@@ -114,8 +115,31 @@ func HandleRabbit(rabbit *azuretls.Websocket, ws *websocket.Conn, loggedIn *bool
 			}
 
 			ws.WriteMessage(1, responseBytes)
+		} else if strings.Contains(message, "\"longFormResponse\":") {
+			var longResponse interfaces.RabbitLongReponse
+			err = json.Unmarshal(bytes, &longResponse)
+			if err != nil {
+				log.Println("error unmarshalling long response:", err)
+				continue
+			}
+
+			response := interfaces.LongMessageResponse{
+				Type: "long",
+				Data: interfaces.LongMessageResponseData{
+					Text:   longResponse.Kernel.LongFormResponse.Text,
+					Images: longResponse.Kernel.LongFormResponse.Images,
+				},
+			}
+			responseBytes, err := json.Marshal(response)
+			if err != nil {
+				log.Println("error marshalling long message response:", err)
+			}
+
+			ws.WriteMessage(1, responseBytes)
 		} else {
-			log.Println("unknown message type:", message)
+			if *config.Debug {
+				log.Println("unknown message type:", message)
+			}
 		}
 	}
 }

@@ -69,3 +69,13 @@ type PTTResponse struct {
 	Type string `json:"type"`
 	Data string `json:"data"`
 }
+
+type LongMessageResponse struct {
+	Type string                  `json:"type"`
+	Data LongMessageResponseData `json:"data"`
+}
+
+type LongMessageResponseData struct {
+	Text   string   `json:"text"`
+	Images []string `json:"images"`
+}

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"main/config"
 	"main/handlers"
 
 	"github.com/gorilla/websocket"
@@ -12,34 +13,6 @@ import (
 
 type webSocketHandler struct {
 	upgrader websocket.Upgrader
-}
-
-var (
-	AppVersion = "undefined"
-	OSVersion  = "undefined"
-)
-
-func validateEnv() {
-	os_version, exists := os.LookupEnv("OS_VERSION")
-	if !exists {
-		log.Fatal("OS_VERSION environment variable not set")
-	}
-
-	app_version, exists := os.LookupEnv("APP_VERSION")
-	if !exists {
-		log.Fatal("APP_VERSION environment variable not set")
-	}
-
-	if os_version == "" {
-		log.Fatal("OS_VERSION environment variable is empty")
-	}
-
-	if app_version == "" {
-		log.Fatal("APP_VERSION environment variable is empty")
-	}
-
-	AppVersion = app_version
-	OSVersion = os_version
 }
 
 func (wsh webSocketHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -50,15 +23,17 @@ func (wsh webSocketHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Handle incoming traffic in a goroutine
-	go handlers.ServerHandler(ws, OSVersion, AppVersion)
+	go handlers.ServerHandler(ws, config.OSVersion, config.AppVersion)
 }
 
 func main() {
 	port, exists := os.LookupEnv("PORT")
 
-	validateEnv()
-	println("OS_VERSION: " + OSVersion)
-	println("APP_VERSION: " + AppVersion)
+	config.Init()
+
+	if *config.Debug {
+		log.Println("Debug mode enabled")
+	}
 
 	portNumber := "8080"
 	if exists {

@@ -28,3 +28,12 @@ type RabbitSpeechResponse struct {
 		Text       string `json:"text"`
 	} `json:"speechRecognized"`
 }
+
+type RabbitLongReponse struct {
+	Kernel struct {
+		LongFormResponse struct {
+			Text   string   `json:"fullTextResponse"`
+			Images []string `json:"images"`
+		} `json:"longFormResponse"`
+	} `json:"kernel"`
+}

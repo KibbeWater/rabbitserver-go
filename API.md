@@ -109,3 +109,19 @@ The server will then parse and register the device to your account, returning th
   }
 }
 ```
+
+## Long
+
+This type is sent by the server when user has asked for a knowledge prompt. Theres no request using this type
+
+The server will respond with a JSON object containing the following fields:
+
+```json
+{
+  "type": "long",
+  "data": {
+    "text": "<Text>",
+    "images": ["<Image-URLs>"]
+  }
+}
+```
