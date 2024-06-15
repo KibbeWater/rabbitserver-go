@@ -20,10 +20,17 @@ export APP_VERSION=<App-Version>
 export OS_VERSION=<OS-Version>
 ```
 
-Finally, run the build script and the binary will be created in the `bin` directory.
+Before the next step, we should build the project to generate the `bin` directory
 
 ```bash
 ./build.sh
+```
+
+The executable will also look for a key.pub file in the same directory as the executable. This file should contain the public RSA key used to sign the Device-Health messages.
+
+Finally, we can run the start script and the server will start
+
+```bash
 ./start.sh
 ```
 
