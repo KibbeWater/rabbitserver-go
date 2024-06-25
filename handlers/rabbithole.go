@@ -21,6 +21,10 @@ func HandleRabbit(rabbit *azuretls.Websocket, ws *websocket.Conn, loggedIn *bool
 		}
 
 		message := string(bytes)
+		if *config.Debug {
+			print("received message from rabbit: ")
+			println(message)
+		}
 		if strings.Contains(message, "{\"initialize\"") {
 			response := interfaces.LogonResponse{
 				Type: "logon",
