@@ -217,8 +217,8 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 
 			// Send back a meeting message
 			response := interfaces.MeetingMessageData{
-				Type:   "meeting",
-				Active: false,
+				Type: "meeting",
+				Data: false,
 			}
 			responseBytes, err := json.Marshal(response)
 			if err != nil {

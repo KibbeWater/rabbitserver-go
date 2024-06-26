@@ -91,6 +91,6 @@ type LongMessageResponseData struct {
 }
 
 type MeetingMessageData struct {
-	Type   string `json:"type"`
-	Active bool   `json:"active"`
+	Type string `json:"type"`
+	Data bool   `json:"active"`
 }
