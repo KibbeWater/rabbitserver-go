@@ -133,7 +133,7 @@ This type is used to receive start and end voice recordings. When the meeting st
 ```json
 {
   "type": "meeting",
-  "active": true
+  "data": true
 }
 ```
 
