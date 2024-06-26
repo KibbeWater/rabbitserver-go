@@ -125,3 +125,34 @@ The server will respond with a JSON object containing the following fields:
   }
 }
 ```
+
+## Meeting
+
+This type is used to receive start and end voice recordings. When the meeting starts, the server will respond with the following format:
+
+```json
+{
+  "type": "meeting",
+  "active": true
+}
+```
+
+When the meeting ends, the client sends the following message:
+
+```json
+{
+  "type": "meeting",
+  "data": false // This variable is for the "cancel" option, set this to true to discard previous meeting data
+}
+```
+
+## RAW
+
+This type is used to send raw data to the server. Due to the nature of the request, responses are not guaranteed.
+
+```json
+{
+  "type": "raw",
+  "data": "<Raw-JSON-Data>"
+}
+```
