@@ -35,6 +35,16 @@ type RegisterRequest struct {
 	Data string `json:"data"`
 }
 
+type RAWRequest struct {
+	Type string `json:"type"`
+	Data string `json:"data"`
+}
+
+type MeetingRequest struct {
+	Type string `json:"type"`
+	Data bool   `json:"data"`
+}
+
 type LogonResponse struct {
 	Type string `json:"type"`
 	Data string `json:"data"`
@@ -78,4 +88,9 @@ type LongMessageResponse struct {
 type LongMessageResponseData struct {
 	Text   string   `json:"text"`
 	Images []string `json:"images"`
+}
+
+type MeetingMessageData struct {
+	Type   string `json:"type"`
+	Active bool   `json:"active"`
 }

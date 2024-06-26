@@ -140,6 +140,17 @@ func HandleRabbit(rabbit *azuretls.Websocket, ws *websocket.Conn, loggedIn *bool
 			}
 
 			ws.WriteMessage(1, responseBytes)
+		} else if strings.Contains(message, "meetingAssistant") {
+			response := interfaces.MeetingMessageData{
+				Type:   "meeting",
+				Active: true,
+			}
+			responseBytes, err := json.Marshal(response)
+			if err != nil {
+				log.Println("error marshalling meeting message response:", err)
+			}
+
+			ws.WriteMessage(1, responseBytes)
 		} else {
 			if *config.Debug {
 				log.Println("unknown message type:", message)

@@ -45,6 +45,11 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 			continue
 		}
 
+		if *config.Debug {
+			println("received message from client:", msg.Type)
+			println("message:", string(message))
+		}
+
 		switch msg.Type {
 		case "logon":
 			if isLoggedIn {
@@ -187,6 +192,58 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 			err = rabbitConnection.WriteMessage(2, audioData)
 			if err != nil {
 				log.Println("error writing audio to rabbit:", err)
+				continue
+			}
+		case "meeting":
+			if !isLoggedIn {
+				log.Println("meeting received before logon")
+				continue
+			}
+
+			// Unmarshal the message
+			data := interfaces.MeetingRequest{}
+			err = json.Unmarshal([]byte(message), &data)
+			if err != nil {
+				log.Println("error unmarshalling meeting data:", err)
+				continue
+			}
+
+			// Send the message to the rabbit connection
+			err = rabbitConnection.WriteMessage(1, []byte(fmt.Sprintf("{\"meetingAssistant\":{\"endRecording\":{\"cancel\":%t}}}", data.Data)))
+			if err != nil {
+				log.Println("error writing meeting to rabbit:", err)
+				continue
+			}
+
+			// Send back a meeting message
+			response := interfaces.MeetingMessageData{
+				Type:   "meeting",
+				Active: false,
+			}
+			responseBytes, err := json.Marshal(response)
+			if err != nil {
+				log.Println("error marshalling meeting response:", err)
+				continue
+			}
+
+			err = ws.WriteMessage(1, responseBytes)
+			if err != nil {
+				log.Println("error writing meeting response:", err)
+				continue
+			}
+		case "raw":
+			// Unmarshal the message
+			data := interfaces.RAWRequest{}
+			err = json.Unmarshal([]byte(message), &data)
+			if err != nil {
+				log.Println("error unmarshalling ptt data:", err)
+				continue
+			}
+
+			// Send the message to the rabbit connection
+			err = rabbitConnection.WriteMessage(1, []byte(data.Data))
+			if err != nil {
+				log.Println("error writing raw to rabbit:", err)
 				continue
 			}
 		case "register":
