@@ -15,4 +15,4 @@ if [ -z "$OS_VERSION" ] || [ "$OS_VERSION" == "undefined" ]; then
     exit 1
 fi
 
-APP_VERSION=$APP_VERSION OS_VERSION=$OS_VERSION bin/rabbit main.go
+APP_VERSION=$APP_VERSION OS_VERSION=$OS_VERSION bin/rabbit
