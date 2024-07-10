@@ -108,7 +108,7 @@ func SpawnRabbitConnection(osVer string, appVer string) (*azuretls.Websocket, er
 			{"App-Version", appVer},
 			{"OS-Version", osVer},
 			{"Device-Health", GetHealth()},
-			{"User-Agent", "okhttp/4.9.1"},
+			{"User-Agent", "okhttp/4.11.0"},
 		},
 	)
 
