@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/png"
 	"log"
+	"main/config"
 	"net/url"
 
 	"github.com/Noooste/azuretls-client"
@@ -103,7 +104,7 @@ func SpawnRabbitConnection(osVer string, appVer string) (*azuretls.Websocket, er
 		panic(err)
 	}
 
-	ws, err := session.NewWebsocket("wss://r1-api.rabbit.tech/session", 1024, 1024,
+	ws, err := session.NewWebsocket(config.URL, 1024, 1024,
 		azuretls.OrderedHeaders{
 			{"App-Version", appVer},
 			{"OS-Version", osVer},

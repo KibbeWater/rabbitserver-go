@@ -12,6 +12,7 @@ var Debug = flag.Bool("D", false, "Enable debug mode")
 var (
 	AppVersion = "undefined"
 	OSVersion  = "undefined"
+	URL        = "wss://r1-api.rabbit.tech/session"
 	HealthPK   = "undefined"
 )
 
@@ -64,6 +65,11 @@ func validateEnv() {
 	app_version, exists := os.LookupEnv("APP_VERSION")
 	if !exists {
 		log.Fatal("APP_VERSION environment variable not set")
+	}
+
+	url, exists := os.LookupEnv("URL")
+	if exists {
+		URL = url
 	}
 
 	if os_version == "" {

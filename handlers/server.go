@@ -26,6 +26,10 @@ func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
 		panic(fmt.Sprintf("Error connecting to the RabbitHole, please check and verify that the OSVersion and AppVersion headers are correct. Error: %v", err))
 	}
 
+	if *config.Debug {
+		log.Println("Connected to RabbitHole at " + config.URL)
+	}
+
 	go HandleRabbit(rabbitConnection, ws, &isLoggedIn)
 
 	for {
