@@ -17,10 +17,10 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string) {
+func ServerHandler(ws *websocket.Conn, OSVersion string, AppVersion string, imei string) {
 	var isLoggedIn bool = false
 
-	rabbitConnection, err := rabbit.SpawnRabbitConnection(OSVersion, AppVersion)
+	rabbitConnection, err := rabbit.SpawnRabbitConnection(OSVersion, AppVersion, imei)
 
 	if err != nil {
 		panic(fmt.Sprintf("Error connecting to the RabbitHole, please check and verify that the OSVersion and AppVersion headers are correct. Error: %v", err))

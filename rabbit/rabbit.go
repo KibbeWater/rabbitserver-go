@@ -97,7 +97,7 @@ func Register(URL string) []byte {
 	return resp.Body
 }
 
-func SpawnRabbitConnection(osVer string, appVer string) (*azuretls.Websocket, error) {
+func SpawnRabbitConnection(osVer string, appVer string, imei string) (*azuretls.Websocket, error) {
 	session := azuretls.NewSession()
 
 	if err := session.ApplyJa3(JA3, azuretls.SchemeWss); err != nil {
@@ -108,6 +108,7 @@ func SpawnRabbitConnection(osVer string, appVer string) (*azuretls.Websocket, er
 		azuretls.OrderedHeaders{
 			{"App-Version", appVer},
 			{"OS-Version", osVer},
+			{"deviceId", imei},
 			{"Device-Health", GetHealth()},
 			{"User-Agent", "okhttp/4.11.0"},
 		},

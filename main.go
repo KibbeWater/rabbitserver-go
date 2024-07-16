@@ -22,8 +22,19 @@ func (wsh webSocketHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get IMEI header
+	imei := ""
+
+	urlDeviceId := r.URL.Query().Get("deviceId")
+	headerDeviceId := r.Header.Get("deviceId")
+	if urlDeviceId != "" {
+		imei = urlDeviceId
+	} else if headerDeviceId != "" {
+		imei = headerDeviceId
+	}
+
 	// Handle incoming traffic in a goroutine
-	go handlers.ServerHandler(ws, config.OSVersion, config.AppVersion)
+	go handlers.ServerHandler(ws, config.OSVersion, config.AppVersion, imei)
 }
 
 func main() {
