@@ -29,6 +29,7 @@ jobs:
     # Set the output filename based on the OS
     - name: Set output file name
       id: vars
+      shell: bash
       run: |
         if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
           echo "OUTPUT_FILE=bin/server.exe" >> $GITHUB_ENV
@@ -41,6 +42,7 @@ jobs:
 
     # Convert runner.os and runner.arch to lowercase for the artifact name
     - name: Upload Build
+      shell: bash
       run: |
         os_lower=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
         arch_lower=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]')
