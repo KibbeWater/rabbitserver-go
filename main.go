@@ -60,5 +60,5 @@ func main() {
 	}
 	http.Handle("/", webSocketHandler)
 	log.Print("Starting server on port " + portNumber)
-	log.Fatal(http.ListenAndServe("localhost:"+portNumber, nil))
+	log.Fatal(http.ListenAndServe("0.0.0.0:"+portNumber, nil))
 }
