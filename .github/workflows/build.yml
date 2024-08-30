@@ -34,6 +34,7 @@ jobs:
           echo "OUTPUT_FILE=bin/server.exe" >> $GITHUB_ENV
         else
           echo "OUTPUT_FILE=bin/server" >> $GITHUB_ENV
+        fi
 
     - name: Build
       run: go build -o ${{ env.OUTPUT_FILE }} main.go
